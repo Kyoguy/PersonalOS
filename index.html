@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>David's OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inconsolata:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–bg: #f5f0e8;
+–bg2: #ede8de;
+–surface: #faf7f2;
+–border: #d8d0c0;
+–border2: #c8bfad;
+–text: #1a1510;
+–muted: #8a7f6e;
+–dim: #b8ad9a;
+–ink: #2d2520;
+–g: #2d6a2d;       /* green — gym / good */
+–r: #8b2020;       /* red — miss / bad */
+–b: #1a3a6b;       /* blue — dev */
+–gold: #8b6914;    /* gold — sleep / bible */
+–trade: #4a2d7a;   /* purple — trading */
+–font-h: ‘Syne’, sans-serif;
+–font-m: ‘Inconsolata’, monospace;
+}
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: var(–font-h);
+min-height: 100vh;
+padding: 28px 24px;
+}
+
+/* paper texture */
+body::before {
+content: ‘’;
+position: fixed; inset: 0;
+background-image:
+repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.03) 28px);
+pointer-events: none;
+z-index: 0;
+}
+
+.wrap { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* ── HEADER ── */
+.hdr {
+display: flex;
+align-items: flex-end;
+justify-content: space-between;
+border-bottom: 2px solid var(–ink);
+padding-bottom: 16px;
+margin-bottom: 20px;
+}
+
+.hdr-title {
+font-size: clamp(36px, 6vw, 68px);
+font-weight: 800;
+letter-spacing: -2px;
+line-height: 0.92;
+color: var(–ink);
+}
+
+.hdr-title span { color: var(–b); }
+
+.hdr-right {
+text-align: right;
+font-family: var(–font-m);
+font-size: 11px;
+color: var(–muted);
+line-height: 2;
+}
+
+.hdr-time {
+font-size: 26px;
+font-weight: 800;
+color: var(–ink);
+font-family: var(–font-h);
+letter-spacing: -1px;
+line-height: 1;
+}
+
+/* ── TODAY BANNER ── */
+.today-banner {
+background: var(–ink);
+color: var(–bg);
+border-radius: 4px;
+padding: 14px 20px;
+margin-bottom: 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 16px;
+animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+
+.today-banner .day-label {
+font-size: 11px;
+font-family: var(–font-m);
+opacity: 0.5;
+text-transform: uppercase;
+letter-spacing: 0.12em;
+margin-bottom: 4px;
+}
+
+.today-banner .day-name {
+font-size: 22px;
+font-weight: 700;
+letter-spacing: -0.5px;
+}
+
+.today-banner .schedule-info {
+font-family: var(–font-m);
+font-size: 12px;
+opacity: 0.75;
+line-height: 1.6;
+}
+
+.today-banner .windows {
+display: flex;
+gap: 8px;
+flex-wrap: wrap;
+}
+
+.window-pill {
+background: rgba(255,255,255,0.12);
+border: 1px solid rgba(255,255,255,0.2);
+border-radius: 3px;
+padding: 6px 12px;
+font-family: var(–font-m);
+font-size: 11px;
+line-height: 1.4;
+}
+
+.window-pill .wt { opacity: 0.55; font-size: 10px; }
+.window-pill .wv { font-weight: 600; color: #fff; }
+
+/* ── SPECIAL DAY BANNER ── */
+.special-banner {
+background: linear-gradient(135deg, var(–gold), #c4900a);
+color: #fff;
+border-radius: 4px;
+padding: 12px 20px;
+margin-bottom: 16px;
+display: flex;
+align-items: center;
+gap: 14px;
+font-family: var(–font-m);
+font-size: 12px;
+display: none;
+}
+
+.special-banner.active { display: flex; }
+.special-banner strong { font-size: 14px; font-family: var(–font-h); font-weight: 700; }
+
+/* ── GRID ── */
+.grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 12px;
+}
+
+.col-left { display: flex; flex-direction: column; gap: 12px; }
+.col-mid  { display: flex; flex-direction: column; gap: 12px; }
+.col-right { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── CARD ── */
+.card {
+background: var(–surface);
+border: 1.5px solid var(–border);
+border-radius: 4px;
+padding: 18px;
+animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.card-tag {
+font-family: var(–font-m);
+font-size: 10px;
+letter-spacing: 0.14em;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 12px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.tag-dot {
+width: 7px; height: 7px;
+border-radius: 50%;
+flex-shrink: 0;
+}
+
+.card-num {
+font-size: 48px;
+font-weight: 800;
+letter-spacing: -2px;
+line-height: 1;
+margin-bottom: 2px;
+}
+
+.card-sub {
+font-family: var(–font-m);
+font-size: 11px;
+color: var(–muted);
+margin-bottom: 14px;
+}
+
+/* metric rows */
+.mrow {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 7px 0;
+border-bottom: 1px solid var(–border);
+font-size: 12px;
+}
+.mrow:last-child { border-bottom: none; }
+.mrow .ml { color: var(–muted); font-family: var(–font-m); font-size: 11px; }
+.mrow .mv { font-family: var(–font-m); font-size: 12px; font-weight: 500; }
+
+.mv.g { color: var(–g); }
+.mv.r { color: var(–r); }
+.mv.b { color: var(–b); }
+.mv.gold { color: var(–gold); }
+.mv.trade { color: var(–trade); }
+
+/* progress */
+.prog-wrap { margin-top: 12px; }
+.prog-info { display: flex; justify-content: space-between; font-family: var(–font-m); font-size: 10px; color: var(–muted); margin-bottom: 5px; }
+.prog-track { height: 3px; background: var(–border); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
+
+/* checkboxes / streak */
+.streak-dots { display: flex; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
+.sdot {
+width: 20px; height: 20px;
+border-radius: 3px;
+border: 1.5px solid var(–border);
+background: var(–bg2);
+display: flex; align-items: center; justify-content: center;
+font-family: var(–font-m); font-size: 8px; color: var(–muted);
+cursor: default;
+}
+.sdot.hit-g { background: var(–g); border-color: var(–g); color: #fff; }
+.sdot.hit-r { background: #fee; border-color: var(–r); color: var(–r); }
+
+/* ── GOALS ── */
+.goal-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.goal-item {
+display: flex; align-items: flex-start; gap: 10px;
+padding: 9px 11px;
+background: var(–bg2);
+border: 1.5px solid var(–border);
+border-radius: 3px;
+cursor: pointer;
+transition: border-color 0.15s, background 0.15s;
+user-select: none;
+}
+.goal-item:hover { border-color: var(–border2); }
+.goal-item.done { opacity: 0.45; }
+.goal-item.done .gt { text-decoration: line-through; }
+
+.gcheck {
+width: 15px; height: 15px;
+border: 1.5px solid var(–dim);
+border-radius: 2px;
+flex-shrink: 0;
+margin-top: 1px;
+display: flex; align-items: center; justify-content: center;
+transition: all 0.15s;
+}
+.goal-item.done .gcheck { background: var(–g); border-color: var(–g); }
+.gcheck-tick { display: none; color: #fff; font-size: 10px; font-weight: 700; }
+.goal-item.done .gcheck-tick { display: block; }
+
+.gt { font-size: 12px; line-height: 1.4; }
+.gtag { font-family: var(–font-m); font-size: 9px; color: var(–muted); margin-top: 2px; }
+
+/* ── SPECIAL DAY PLANNER ── */
+.special-form { margin-top: 8px; }
+.sf-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.sf-input {
+flex: 1; padding: 8px 10px;
+background: var(–bg2);
+border: 1.5px solid var(–border);
+border-radius: 3px;
+font-family: var(–font-m);
+font-size: 12px;
+color: var(–text);
+outline: none;
+transition: border-color 0.15s;
+}
+.sf-input:focus { border-color: var(–gold); }
+.sf-btn {
+padding: 8px 14px;
+background: var(–gold);
+color: #fff;
+border: none;
+border-radius: 3px;
+font-family: var(–font-m);
+font-size: 11px;
+font-weight: 600;
+cursor: pointer;
+white-space: nowrap;
+letter-spacing: 0.05em;
+transition: opacity 0.15s;
+}
+.sf-btn:hover { opacity: 0.85; }
+
+.special-day-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.sd-item {
+display: flex; align-items: center; justify-content: space-between;
+background: var(–bg2);
+border: 1.5px solid var(–border);
+border-radius: 3px;
+padding: 8px 12px;
+font-family: var(–font-m);
+font-size: 11px;
+}
+.sd-item .sd-name { font-weight: 600; color: var(–gold); }
+.sd-item .sd-date { color: var(–muted); font-size: 10px; }
+.sd-remove { background: none; border: none; color: var(–muted); cursor: pointer; font-size: 14px; padding: 0 4px; transition: color 0.15s; }
+.sd-remove:hover { color: var(–r); }
+.sd-tip {
+margin-top: 6px;
+padding: 8px 12px;
+background: #fffbf0;
+border: 1px solid #e8d88a;
+border-radius: 3px;
+font-family: var(–font-m);
+font-size: 11px;
+color: var(–gold);
+line-height: 1.6;
+}
+
+/* ── TRADING JOURNAL ── */
+.tj-area {
+margin-top: 8px;
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+.tj-label {
+font-family: var(–font-m);
+font-size: 10px;
+color: var(–muted);
+text-transform: uppercase;
+letter-spacing: 0.1em;
+margin-bottom: 3px;
+}
+.tj-input {
+width: 100%;
+background: var(–bg2);
+border: 1.5px solid var(–border);
+border-radius: 3px;
+padding: 8px 10px;
+font-family: var(–font-m);
+font-size: 12px;
+color: var(–text);
+outline: none;
+resize: none;
+transition: border-color 0.15s;
+}
+.tj-input:focus { border-color: var(–trade); }
+
+.tj-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.ai-tip-box {
+background: #f0eef8;
+border: 1.5px solid #c4b8e8;
+border-radius: 3px;
+padding: 12px;
+font-family: var(–font-m);
+font-size: 11.5px;
+color: var(–trade);
+line-height: 1.7;
+min-height: 60px;
+position: relative;
+}
+.ai-tip-box .ai-label {
+font-size: 9px;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+opacity: 0.6;
+margin-bottom: 6px;
+display: block;
+}
+.ai-thinking {
+display: none;
+align-items: center;
+gap: 8px;
+color: var(–muted);
+font-size: 11px;
+}
+.ai-thinking.show { display: flex; }
+.dot-blink span {
+display: inline-block;
+width: 5px; height: 5px;
+border-radius: 50%;
+background: var(–trade);
+margin: 0 1px;
+animation: blink 1.2s infinite;
+}
+.dot-blink span:nth-child(2) { animation-delay: 0.2s; }
+.dot-blink span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+/* ── DAILY LOG FORM ── */
+.log-section {
+background: var(–ink);
+color: var(–bg);
+border-radius: 4px;
+padding: 20px;
+margin-top: 14px;
+grid-column: 1 / -1;
+}
+
+.log-section .card-tag { color: rgba(245,240,232,0.45); }
+
+.log-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+
+.log-field { display: flex; flex-direction: column; gap: 5px; }
+.lf-label { font-family: var(–font-m); font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.1em; }
+.lf-input {
+background: rgba(255,255,255,0.07);
+border: 1px solid rgba(255,255,255,0.15);
+border-radius: 3px;
+padding: 7px 10px;
+font-family: var(–font-m);
+font-size: 12px;
+color: var(–bg);
+outline: none;
+width: 100%;
+transition: border-color 0.15s;
+}
+.lf-input:focus { border-color: rgba(255,255,255,0.4); }
+.lf-input::placeholder { opacity: 0.3; }
+
+.log-save {
+margin-top: 14px;
+width: 100%;
+padding: 11px;
+background: var(–bg);
+color: var(–ink);
+border: none;
+border-radius: 3px;
+font-family: var(–font-h);
+font-size: 13px;
+font-weight: 700;
+letter-spacing: 0.05em;
+cursor: pointer;
+transition: opacity 0.15s;
+}
+.log-save:hover { opacity: 0.85; }
+
+/* ── TOAST ── */
+.toast {
+position: fixed; bottom: 24px; right: 24px;
+background: var(–ink); color: var(–bg);
+font-family: var(–font-m); font-size: 12px;
+padding: 10px 18px; border-radius: 3px;
+opacity: 0; transform: translateY(8px);
+transition: all 0.25s; pointer-events: none; z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+.grid { grid-template-columns: 1fr 1fr; }
+.log-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+.grid { grid-template-columns: 1fr; }
+.log-grid { grid-template-columns: 1fr 1fr; }
+.hdr-title { font-size: 36px; }
+.tj-row { grid-template-columns: 1fr; }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+
+  <div class="hdr">
+    <div class="hdr-title">DAVID'S<br><span>OS</span></div>
+    <div class="hdr-right">
+      <div id="live-date" style="font-size:11px;">—</div>
+      <div class="hdr-time" id="live-time">—</div>
+      <div style="margin-top:4px; font-size:10px;">PERSONAL OPERATING SYSTEM</div>
+    </div>
+  </div>
+
+  <!-- TODAY BANNER -->
+
+  <div class="today-banner" id="today-banner">
+    <div>
+      <div class="day-label">Today</div>
+      <div class="day-name" id="banner-day">—</div>
+      <div class="schedule-info" id="banner-info">—</div>
+    </div>
+    <div class="windows" id="banner-windows"></div>
+  </div>
+
+  <!-- SPECIAL DAY ALERT -->
+
+  <div class="special-banner" id="special-alert">
+    <div style="font-size:20px;">⭐</div>
+    <div>
+      <strong id="special-alert-name">Special Day</strong>
+      <div style="font-size:11px; margin-top:2px;" id="special-alert-tip">—</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+
+  <div class="grid">
+
+```
+<!-- LEFT COL -->
+<div class="col-left">
+
+  <!-- DEV CARD -->
+  <div class="card" style="animation-delay:0.05s;">
+    <div class="card-tag"><span class="tag-dot" style="background:var(--b)"></span> Roblox Dev</div>
+    <div class="card-num" style="color:var(--b);" id="dev-streak-num">0</div>
+    <div class="card-sub">day dev streak</div>
+    <div class="mrow"><span class="ml">Hours this week</span><span class="mv b" id="dev-hrs-wk">0h</span></div>
+    <div class="mrow"><span class="ml">Goal</span><span class="mv">7h / week (1h/day)</span></div>
+    <div class="mrow"><span class="ml">Last session</span><span class="mv" id="dev-last">—</span></div>
+    <div class="mrow"><span class="ml">Active project</span><span class="mv b">Shinobi Inc.</span></div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Weekly goal (7h)</span><span id="dev-pct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="background:var(--b);" id="dev-bar" style="width:0%"></div></div>
+    </div>
+    <div class="streak-dots" id="dev-dots"></div>
+  </div>
+
+  <!-- SLEEP CARD -->
+  <div class="card" style="animation-delay:0.1s;">
+    <div class="card-tag"><span class="tag-dot" style="background:var(--gold)"></span> Sleep</div>
+    <div class="card-num" style="color:var(--gold);" id="sleep-num">—</div>
+    <div class="card-sub">hours last night</div>
+    <div class="mrow"><span class="ml">7-day avg</span><span class="mv gold" id="sleep-avg">—</span></div>
+    <div class="mrow"><span class="ml">Minimum goal</span><span class="mv">7h</span></div>
+    <div class="mrow"><span class="ml">Aim for</span><span class="mv">8h</span></div>
+    <div class="mrow"><span class="ml">Nights hitting 7h+</span><span class="mv gold" id="sleep-nights">—</span></div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>7h+ nights this week</span><span id="sleep-pct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="background:var(--gold);" id="sleep-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MID COL -->
+<div class="col-mid">
+
+  <!-- GYM CARD -->
+  <div class="card" style="animation-delay:0.12s;">
+    <div class="card-tag"><span class="tag-dot" style="background:var(--g)"></span> Gym & Fitness</div>
+    <div class="card-num" style="color:var(--g);" id="gym-sessions-wk">0</div>
+    <div class="card-sub">sessions this week</div>
+    <div class="mrow"><span class="ml">Minimum goal</span><span class="mv">3x / week</span></div>
+    <div class="mrow"><span class="ml">Aim for</span><span class="mv g">6x / week</span></div>
+    <div class="mrow"><span class="ml">Current streak</span><span class="mv g" id="gym-streak">0 days</span></div>
+    <div class="mrow"><span class="ml">Last session</span><span class="mv" id="gym-last">—</span></div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Sessions (min 3, aim 6)</span><span id="gym-pct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="background:var(--g);" id="gym-bar" style="width:0%"></div></div>
+    </div>
+    <div class="streak-dots" id="gym-dots"></div>
+  </div>
+
+  <!-- BIBLE CARD -->
+  <div class="card" style="animation-delay:0.16s;">
+    <div class="card-tag"><span class="tag-dot" style="background:#8b4513"></span> Bible Reading</div>
+    <div class="card-num" style="color:#8b4513;" id="bible-streak">0</div>
+    <div class="card-sub">day reading streak</div>
+    <div class="mrow"><span class="ml">Goal</span><span class="mv">30 min / day</span></div>
+    <div class="mrow"><span class="ml">Days this week</span><span class="mv" id="bible-days-wk">0 / 7</span></div>
+    <div class="mrow"><span class="ml">Best time</span><span class="mv" style="color:#8b4513;">Morning (before phone)</span></div>
+    <div class="prog-wrap">
+      <div class="prog-info"><span>Days read this week</span><span id="bible-pct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="background:#8b4513;" id="bible-bar" style="width:0%"></div></div>
+    </div>
+    <div class="streak-dots" id="bible-dots"></div>
+  </div>
+
+</div>
+
+<!-- RIGHT COL -->
+<div class="col-right">
+
+  <!-- WEEKLY GOALS -->
+  <div class="card" style="animation-delay:0.18s;">
+    <div class="card-tag"><span class="tag-dot" style="background:var(--ink)"></span> This Week's Goals</div>
+    <div class="goal-list" id="goals-list"></div>
+  </div>
+
+  <!-- SPECIAL DAY PLANNER -->
+  <div class="card" style="animation-delay:0.22s;">
+    <div class="card-tag"><span class="tag-dot" style="background:var(--gold)"></span> Special Day Planner</div>
+    <div class="special-form">
+      <div class="sf-row">
+        <input class="sf-input" id="sd-name" placeholder="Event name (e.g. Disney day)">
+        <input class="sf-input" id="sd-date" type="date" style="width:140px; flex:none;">
+        <button class="sf-btn" onclick="addSpecialDay()">Add</button>
+      </div>
+    </div>
+    <div class="special-day-list" id="sd-list"></div>
+  </div>
+
+</div>
+```
+
+  </div>
+
+  <!-- TRADING JOURNAL (full width) -->
+
+  <div class="card" style="margin-top:12px; animation-delay:0.25s;">
+    <div class="card-tag"><span class="tag-dot" style="background:var(--trade)"></span> Options Trading Journal</div>
+
+```
+<div class="tj-area">
+  <div class="tj-row">
+    <div>
+      <div class="tj-label">Current Positions</div>
+      <input class="tj-input" id="tj-positions" placeholder="e.g. SOFI $8C 6/21, MSFT $440P 7/18, TLT $88C 9/19">
+    </div>
+    <div>
+      <div class="tj-label">P&L Today</div>
+      <input class="tj-input" id="tj-pnl" placeholder="+$240 or -$80">
+    </div>
+  </div>
+
+  <div>
+    <div class="tj-label">What I did today (trades, adjustments, research)</div>
+    <textarea class="tj-input" id="tj-notes" rows="3" placeholder="e.g. Bought 2 TLT $88C Sep 19 @ $1.20. Thesis: Fed pivot catalyst. Closed SOFI for +$180. Watching MSFT earnings..."></textarea>
+  </div>
+
+  <div style="display:flex; gap:8px; align-items:center;">
+    <button onclick="getTradingTip()" style="padding:9px 18px; background:var(--trade); color:#fff; border:none; border-radius:3px; font-family:var(--font-m); font-size:11px; font-weight:600; cursor:pointer; letter-spacing:0.05em; transition:opacity 0.15s;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+      ▶ Get AI Tips
+    </button>
+    <button onclick="saveTradeLog()" style="padding:9px 18px; background:var(--bg2); border:1.5px solid var(--border); color:var(--ink); border-radius:3px; font-family:var(--font-m); font-size:11px; font-weight:600; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
+      Save Log
+    </button>
+  </div>
+
+  <div class="ai-tip-box" id="ai-tip-box">
+    <span class="ai-label">AI Coach</span>
+    <div class="ai-thinking" id="ai-thinking">
+      <span>Analyzing your positions</span>
+      <span class="dot-blink"><span></span><span></span><span></span></span>
+    </div>
+    <div id="ai-tip-text" style="white-space: pre-wrap;">Enter your positions and notes above, then hit "Get AI Tips" for options-specific coaching.</div>
+  </div>
+
+  <!-- Past trade logs -->
+  <div id="trade-log-list" style="display:flex; flex-direction:column; gap:6px; margin-top:4px;"></div>
+</div>
+```
+
+  </div>
+
+  <!-- DAILY LOG BAR -->
+
+  <div class="log-section">
+    <div class="card-tag">📝 Daily Log — <span id="log-today-label">—</span></div>
+    <div class="log-grid">
+      <div class="log-field">
+        <div class="lf-label">Dev session?</div>
+        <input class="lf-input" id="log-dev" placeholder="Yes / No / 1.5h">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">What you built</div>
+        <input class="lf-input" id="log-built" placeholder="e.g. Jutsu rarity system">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">Gym today?</div>
+        <input class="lf-input" id="log-gym" placeholder="Yes / No / Rest">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">Workout</div>
+        <input class="lf-input" id="log-workout" placeholder="e.g. Push 45min w/ GF">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">Hours slept</div>
+        <input class="lf-input" id="log-sleep" type="number" step="0.5" min="0" max="12" placeholder="7.5">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">Bible today?</div>
+        <input class="lf-input" id="log-bible" placeholder="Yes / No / 30min">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">Dev hours</div>
+        <input class="lf-input" id="log-devhrs" type="number" step="0.5" min="0" max="10" placeholder="1">
+      </div>
+      <div class="log-field">
+        <div class="lf-label">Notes / mood</div>
+        <input class="lf-input" id="log-notes" placeholder="Anything worth noting...">
+      </div>
+    </div>
+    <button class="log-save" onclick="saveLog()">Save Today's Log</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── SCHEDULE DATA ───────────────────────────────────────────────────────────
+const SCHEDULE = {
+  1: { // Monday
+    label: 'Monday — Free Day',
+    info: 'Full free day. Girlfriend day possible.',
+    windows: [
+      { t: 'Morning', v: 'Bible + Dev (1h min)' },
+      { t: 'Afternoon', v: 'Gym w/ GF or solo' },
+      { t: 'Night', v: 'Wind down by 11pm' }
+    ]
+  },
+  2: { // Tuesday
+    label: 'Tuesday — Free Day',
+    info: 'Full free day. Girlfriend day possible.',
+    windows: [
+      { t: 'Morning', v: 'Bible + Dev (1h min)' },
+      { t: 'Afternoon', v: 'Gym w/ GF or solo' },
+      { t: 'Night', v: 'Wind down by 11pm' }
+    ]
+  },
+  3: { // Wednesday
+    label: 'Wednesday — Free Day',
+    info: 'Full free day. Girlfriend day possible.',
+    windows: [
+      { t: 'Morning', v: 'Bible + Dev (1h min)' },
+      { t: 'Afternoon', v: 'Gym w/ GF or solo' },
+      { t: 'Night', v: 'Wind down by 11pm' }
+    ]
+  },
+  4: { // Thursday
+    label: 'Thursday — Work 4:30–10:30pm',
+    info: 'Home ~11pm. Shower ~45min. Sleep ~12:30am.',
+    windows: [
+      { t: 'Morning', v: 'Bible + Dev (1h) ← do this early' },
+      { t: '2–4pm', v: 'Trading review / Gym if going' },
+      { t: 'After work', v: 'Shower → bed by 12:30am' }
+    ]
+  },
+  5: { // Friday
+    label: 'Friday — Work 4:30–10:30pm',
+    info: 'Home ~11pm. Same post-work routine as Thursday.',
+    windows: [
+      { t: 'Morning', v: 'Bible + Dev (1h) ← do this early' },
+      { t: '2–4pm', v: 'Gym if going (last chance before work)' },
+      { t: 'After work', v: 'Shower → bed by 12:30am' }
+    ]
+  },
+  6: { // Saturday
+    label: 'Saturday — Work 4:30–10:30pm',
+    info: 'Home ~11pm. Same post-work routine.',
+    windows: [
+      { t: 'Morning', v: 'Bible + Dev (1h) ← do this early' },
+      { t: '2–4pm', v: 'Gym push if needed for weekly goal' },
+      { t: 'After work', v: 'Shower → bed by 12:30am' }
+    ]
+  },
+  0: { // Sunday
+    label: 'Sunday — Church 1–3pm',
+    info: 'Church 1pm–3pm. Weekly review day.',
+    windows: [
+      { t: 'Morning', v: 'Bible (at church counts!) + Dev' },
+      { t: '1–3pm', v: 'Church' },
+      { t: 'Evening', v: 'GF time + Weekly review' }
+    ]
+  }
+};
+
+const SPECIAL_TIPS = {
+  default: (name) => `You have "${name}" today. Your goals still apply — here's how to protect them:\n\n• Dev: Do your 1h BEFORE you leave. Set an alarm.\n• Gym: Go in the morning or skip and make it up tomorrow.\n• Bible: 30min in the morning — non-negotiable.\n• Sleep: Set a hard alarm for the morning so you still protect 7h.`
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const KEY = 'davidos_v2';
+const defaults = {
+  logs: [],
+  tradeLogs: [],
+  specialDays: [],
+  weeklyGoals: [
+    { text: 'Dev session every single day (1h min)', tag: 'dev', done: false },
+    { text: 'Hit gym at least 3x', tag: 'gym', done: false },
+    { text: 'Read bible every morning', tag: 'bible', done: false },
+    { text: 'Average 7h+ sleep all week', tag: 'sleep', done: false },
+    { text: 'Log trading positions daily', tag: 'trading', done: false },
+    { text: 'Gym with girlfriend at least 2x', tag: 'gym', done: false },
+  ]
+};
+
+function load() {
+  try { const r = localStorage.getItem(KEY); return r ? {...defaults, ...JSON.parse(r)} : {...defaults}; }
+  catch { return {...defaults}; }
+}
+function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
+
+let S = load();
+
+// ─── CLOCK ───────────────────────────────────────────────────────────────────
+function tick() {
+  const n = new Date();
+  document.getElementById('live-time').textContent =
+    n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  document.getElementById('live-date').textContent =
+    n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('log-today-label').textContent =
+    n.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+}
+tick(); setInterval(tick, 1000);
+
+// ─── TODAY BANNER ────────────────────────────────────────────────────────────
+function renderBanner() {
+  const dow = new Date().getDay();
+  const sch = SCHEDULE[dow];
+  document.getElementById('banner-day').textContent = sch.label;
+  document.getElementById('banner-info').textContent = sch.info;
+  const wc = document.getElementById('banner-windows');
+  wc.innerHTML = sch.windows.map(w =>
+    `<div class="window-pill"><div class="wt">${w.t}</div><div class="wv">${w.v}</div></div>`
+  ).join('');
+}
+
+// ─── SPECIAL DAYS ────────────────────────────────────────────────────────────
+function addSpecialDay() {
+  const name = document.getElementById('sd-name').value.trim();
+  const date = document.getElementById('sd-date').value;
+  if (!name || !date) { showToast('Enter name and date'); return; }
+  S.specialDays.push({ name, date });
+  save(S);
+  renderSpecialDays();
+  document.getElementById('sd-name').value = '';
+  document.getElementById('sd-date').value = '';
+}
+
+function removeSpecialDay(i) {
+  S.specialDays.splice(i, 1);
+  save(S);
+  renderSpecialDays();
+}
+
+function renderSpecialDays() {
+  const today = new Date().toISOString().split('T')[0];
+  const list = document.getElementById('sd-list');
+  list.innerHTML = '';
+  const alert = document.getElementById('special-alert');
+  alert.classList.remove('active');
+
+  S.specialDays.forEach((sd, i) => {
+    const isToday = sd.date === today;
+    const d = new Date(sd.date + 'T12:00:00');
+    const dateStr = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const daysUntil = Math.round((d - new Date()) / 86400000);
+
+    const el = document.createElement('div');
+    el.className = 'sd-item';
+    el.innerHTML = `
+      <div>
+        <div class="sd-name">${sd.name}</div>
+        <div class="sd-date">${dateStr} · ${isToday ? '🔴 TODAY' : daysUntil > 0 ? `in ${daysUntil} day${daysUntil>1?'s':''}` : 'passed'}</div>
+      </div>
+      <button class="sd-remove" onclick="removeSpecialDay(${i})">✕</button>
+    `;
+    list.appendChild(el);
+
+    if (isToday) {
+      alert.classList.add('active');
+      document.getElementById('special-alert-name').textContent = `Special Day: ${sd.name}`;
+      document.getElementById('special-alert-tip').textContent =
+        `Do your Dev (1h) + Bible (30min) BEFORE you leave. Gym in the morning if possible. Protect your sleep — be home by a time that gives you 7h.`;
+    }
+
+    if (daysUntil === 1) {
+      const tip = document.createElement('div');
+      tip.className = 'sd-tip';
+      tip.textContent = `⚠️ "${sd.name}" is tomorrow. Prep today: finish dev early, gym today so tomorrow's miss is covered, sleep on time.`;
+      list.appendChild(tip);
+    }
+  });
+}
+
+// ─── GOALS ───────────────────────────────────────────────────────────────────
+function renderGoals() {
+  const el = document.getElementById('goals-list');
+  el.innerHTML = '';
+  S.weeklyGoals.forEach((g, i) => {
+    const div = document.createElement('div');
+    div.className = 'goal-item' + (g.done ? ' done' : '');
+    div.innerHTML = `
+      <div class="gcheck"><span class="gcheck-tick">✓</span></div>
+      <div><div class="gt">${g.text}</div><div class="gtag">${g.tag.toUpperCase()}</div></div>
+    `;
+    div.onclick = () => { S.weeklyGoals[i].done = !S.weeklyGoals[i].done; save(S); renderGoals(); };
+    el.appendChild(div);
+  });
+}
+
+// ─── METRICS ─────────────────────────────────────────────────────────────────
+function getRecentLogs(n) { return S.logs.slice(-n); }
+function isYes(v) { return v && /^y/i.test(v.trim()); }
+
+function renderMetrics() {
+  const last7 = getRecentLogs(7);
+  const latest = S.logs[S.logs.length - 1];
+
+  // DEV
+  const devHrsWk = last7.reduce((a, l) => a + (parseFloat(l.devHrs) || 0), 0);
+  const devStreak = calcStreak(S.logs, l => parseFloat(l.devHrs) >= 1 || isYes(l.dev));
+  document.getElementById('dev-streak-num').textContent = devStreak;
+  document.getElementById('dev-hrs-wk').textContent = devHrsWk.toFixed(1) + 'h';
+  document.getElementById('dev-last').textContent = latest?.built || '—';
+  const devPct = Math.min(100, Math.round((devHrsWk / 7) * 100));
+  document.getElementById('dev-pct').textContent = devPct + '%';
+  document.getElementById('dev-bar').style.width = devPct + '%';
+  renderDots('dev-dots', S.logs.slice(-14), l => parseFloat(l.devHrs) >= 1 || isYes(l.dev));
+
+  // GYM
+  const gymWk = last7.filter(l => isYes(l.gym)).length;
+  const gymStreak = calcStreak(S.logs, l => isYes(l.gym));
+  document.getElementById('gym-sessions-wk').textContent = gymWk;
+  document.getElementById('gym-streak').textContent = gymStreak + ' days';
+  document.getElementById('gym-last').textContent = latest?.workout || '—';
+  const gymPct = Math.min(100, Math.round((gymWk / 6) * 100));
+  document.getElementById('gym-pct').textContent = gymPct + '%';
+  document.getElementById('gym-bar').style.width = gymPct + '%';
+  renderDots('gym-dots', S.logs.slice(-14), l => isYes(l.gym));
+
+  // SLEEP
+  const sleepVals = last7.map(l => parseFloat(l.sleep) || 0).filter(Boolean);
+  const sleepLast = parseFloat(latest?.sleep) || null;
+  const sleepAvg = sleepVals.length ? (sleepVals.reduce((a,b)=>a+b,0)/sleepVals.length).toFixed(1) : '—';
+  const sleepNights = last7.filter(l => parseFloat(l.sleep) >= 7).length;
+  document.getElementById('sleep-num').textContent = sleepLast ? sleepLast + 'h' : '—';
+  document.getElementById('sleep-avg').textContent = sleepAvg !== '—' ? sleepAvg + 'h' : '—';
+  document.getElementById('sleep-nights').textContent = sleepNights + ' / 7';
+  const sleepPct = Math.min(100, Math.round((sleepNights / 7) * 100));
+  document.getElementById('sleep-pct').textContent = sleepPct + '%';
+  document.getElementById('sleep-bar').style.width = sleepPct + '%';
+
+  // BIBLE
+  const bibleWk = last7.filter(l => isYes(l.bible)).length;
+  const bibleStreak = calcStreak(S.logs, l => isYes(l.bible));
+  document.getElementById('bible-streak').textContent = bibleStreak;
+  document.getElementById('bible-days-wk').textContent = bibleWk + ' / 7';
+  const biblePct = Math.min(100, Math.round((bibleWk / 7) * 100));
+  document.getElementById('bible-pct').textContent = biblePct + '%';
+  document.getElementById('bible-bar').style.width = biblePct + '%';
+  renderDots('bible-dots', S.logs.slice(-14), l => isYes(l.bible));
+}
+
+function calcStreak(logs, fn) {
+  let streak = 0;
+  for (let i = logs.length - 1; i >= 0; i--) {
+    if (fn(logs[i])) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function renderDots(id, logs, fn) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  const days = ['M','T','W','T','F','S','S'];
+  for (let i = 0; i < 14; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'sdot';
+    if (i < logs.length) {
+      dot.classList.add(fn(logs[i]) ? 'hit-g' : 'hit-r');
+      dot.textContent = fn(logs[i]) ? '✓' : '✗';
+    } else {
+      dot.textContent = '·';
+    }
+    el.appendChild(dot);
+  }
+}
+
+// ─── TRADE LOG ───────────────────────────────────────────────────────────────
+function saveTradeLog() {
+  const pos = document.getElementById('tj-positions').value.trim();
+  const pnl = document.getElementById('tj-pnl').value.trim();
+  const notes = document.getElementById('tj-notes').value.trim();
+  if (!pos && !notes) { showToast('Add some info first'); return; }
+  S.tradeLogs.push({ date: new Date().toISOString().split('T')[0], pos, pnl, notes });
+  if (S.tradeLogs.length > 30) S.tradeLogs.shift();
+  save(S);
+  renderTradeLogs();
+  showToast('Trade log saved');
+}
+
+function renderTradeLogs() {
+  const el = document.getElementById('trade-log-list');
+  const recent = S.tradeLogs.slice(-5).reverse();
+  el.innerHTML = recent.map(t => `
+    <div style="background:var(--bg2); border:1.5px solid var(--border); border-radius:3px; padding:10px 14px; font-family:var(--font-m); font-size:11px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+        <span style="color:var(--muted);">${t.date}</span>
+        <span style="color:${t.pnl?.startsWith('-') ? 'var(--r)' : 'var(--g)'}; font-weight:600;">${t.pnl || '—'}</span>
+      </div>
+      <div style="color:var(--trade); margin-bottom:4px;">${t.pos || '—'}</div>
+      <div style="color:var(--muted); line-height:1.5;">${t.notes || '—'}</div>
+    </div>
+  `).join('');
+}
+
+// ─── AI TRADING TIPS ─────────────────────────────────────────────────────────
+async function getTradingTip() {
+  const pos = document.getElementById('tj-positions').value.trim();
+  const pnl = document.getElementById('tj-pnl').value.trim();
+  const notes = document.getElementById('tj-notes').value.trim();
+
+  if (!pos && !notes) {
+    document.getElementById('ai-tip-text').textContent = 'Enter your current positions and/or what you did today first.';
+    return;
+  }
+
+  const thinking = document.getElementById('ai-thinking');
+  const tipText = document.getElementById('ai-tip-text');
+  thinking.classList.add('show');
+  tipText.textContent = '';
+
+  const prompt = `You are a concise options trading coach. The trader is learning options (calls/puts) and logs their activity daily.
+
+Today's info:
+- Positions: ${pos || 'none listed'}
+- P&L: ${pnl || 'not listed'}  
+- Notes / what they did: ${notes || 'nothing logged yet'}
+
+Give 3–5 short, specific, actionable coaching tips based on what they shared. Focus on:
+- Risk management for their specific positions
+- Timing considerations (theta decay, expiry)
+- What to watch for or do next
+- Any red flags or good moves in their notes
+
+Be direct, practical, and encouraging. Use plain language. No fluff. Format as numbered tips.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(c => c.text || '').join('') || 'No response.';
+    thinking.classList.remove('show');
+    tipText.textContent = text;
+  } catch (e) {
+    thinking.classList.remove('show');
+    tipText.textContent = 'Could not reach AI. Check connection and try again.';
+  }
+}
+
+// ─── DAILY LOG SAVE ───────────────────────────────────────────────────────────
+function saveLog() {
+  const dev = document.getElementById('log-dev').value.trim();
+  const built = document.getElementById('log-built').value.trim();
+  const gym = document.getElementById('log-gym').value.trim();
+  const workout = document.getElementById('log-workout').value.trim();
+  const sleep = document.getElementById('log-sleep').value;
+  const bible = document.getElementById('log-bible').value.trim();
+  const devHrs = document.getElementById('log-devhrs').value;
+  const notes = document.getElementById('log-notes').value.trim();
+
+  if (!dev && !gym && !sleep && !bible) { showToast('Fill in at least one field'); return; }
+
+  const today = new Date().toISOString().split('T')[0];
+  // replace today's log if already exists
+  const existingIdx = S.logs.findIndex(l => l.date === today);
+  const entry = { date: today, dev, built, gym, workout, sleep, bible, devHrs, notes };
+  if (existingIdx >= 0) S.logs[existingIdx] = entry;
+  else S.logs.push(entry);
+
+  save(S);
+  renderMetrics();
+  clearLog();
+  showToast('Day logged ✓');
+}
+
+function clearLog() {
+  ['log-dev','log-built','log-gym','log-workout','log-sleep','log-bible','log-devhrs','log-notes']
+    .forEach(id => document.getElementById(id).value = '');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderBanner();
+renderSpecialDays();
+renderGoals();
+renderMetrics();
+renderTradeLogs();
+</script>
+
+</body>
+</html>
