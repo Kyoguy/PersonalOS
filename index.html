@@ -422,7 +422,8 @@ function getOrBuildRoutine(){
 
 // ── ROUTINE RENDER ──
 function renderRoutine(){
-  const items=getOrBuildRoutine();
+let items;try{items=getOrBuildRoutine();}catch(e){items=[];}
+if(!items||items.length===0){document.getElementById('routine-done-count').textContent='0';document.getElementById('routine-total-count').textContent='0';return;}
   const list=document.getElementById('routine-list');
   list.innerHTML='';
   const now=new Date();
@@ -522,7 +523,7 @@ function tick(){
   document.getElementById('log-today-label').textContent=n.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
   renderRoutine();
 }
-tick();setInterval(tick,60000);setInterval(()=>{document.getElementById('live-time').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});},1000);
+tick();setInterval(()=>{try{tick();}catch(e){}},60000);setInterval(()=>{document.getElementById('live-time').textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});},1000);
 
 // ── BANNER ──
 function renderBanner(){
