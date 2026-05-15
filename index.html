@@ -634,7 +634,7 @@ async function getTradingTip(){
   const thinking=document.getElementById('ai-thinking');const tipText=document.getElementById('ai-tip-text');
   thinking.classList.add('show');tipText.textContent='';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`You are a concise options trading coach.\nPositions: ${pos||'none'}\nP&L: ${pnl||'not listed'}\nNotes: ${notes||'none'}\nGive 3-5 short actionable tips. Focus on risk management, theta decay, timing. Be direct. Number each tip.`}]})});
+    const res=await fetch('/.netlify/functions/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:apiKey,payload:{model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`You are a concise options trading coach.\nPositions: ${pos||'none'}\nP&L: ${pnl||'not listed'}\nNotes: ${notes||'none'}\nGive 3-5 short actionable tips. Focus on risk management, theta decay, timing. Be direct. Number each tip.`}}})});
     const data=await res.json();
     thinking.classList.remove('show');tipText.textContent=data.content?.map(c=>c.text||'').join('')||'No response.';
   }catch(e){thinking.classList.remove('show');tipText.textContent='Could not reach AI.';}
@@ -728,7 +728,7 @@ async function sendChat(){
   typing.innerHTML=`<div class="msg-avatar">C</div><div class="msg-bubble"><span class="dot-blink" style="color:var(--trade)"><span></span><span></span><span></span></span></div>`;
   container.appendChild(typing);container.scrollTop=container.scrollHeight;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:buildSystemPrompt(),messages:chatHistory})});
+    const res=await fetch('/.netlify/functions/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:apiKey,payload:{model:'claude-sonnet-4-20250514',max_tokens:1200,system:buildSystemPrompt(),messages:chatHistory}})});
     const data=await res.json();
     document.getElementById('typing-indicator')?.remove();
     const reply=data.content?.map(c=>c.text||'').join('')||'Something went wrong.';
