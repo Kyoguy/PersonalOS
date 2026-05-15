@@ -14,7 +14,7 @@
   --font-h: 'Syne', sans-serif; --font-m: 'Inconsolata', monospace;
 }
 body { background: var(--bg); color: var(--text); font-family: var(--font-h); min-height: 100vh; padding: 28px 24px; }
-body::before { content: ''; position: fixed; inset: 0; background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(255,255,255,0.015) 28px); pointer-events: none; z-index: 0; }
+body::before { content: none; }
 .wrap { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
 .hdr { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 2px solid var(--border2); padding-bottom: 16px; margin-bottom: 20px; }
 .hdr-title { font-size: clamp(36px, 6vw, 68px); font-weight: 800; letter-spacing: -2px; line-height: 0.92; color: var(--text); }
